@@ -8,6 +8,24 @@
   <body>
     <div class="center">
         <h1>This is a Chat application Implementation</h1>
+
+        <h3 id="chat-header">Currently in chat: general</h3>
+
+        <form id="chatroom-selection">
+
+            <label for="chatroom">Chatroom:</label>
+            <input type="text" id="chatroom" name="chatroom"> <br><br>
+            <input type="submit" value="Change chatroom " >
+
+            <textarea name="messagearea" id="chatmessages" readonly cols="30" rows="10" placeholder="Welcome to chatroom"></textarea>
+            <br>
+
+            <form id="chatroom-message">
+                <label for="message">Message: </label>
+                <input type="text" id="message" name="message"><br><br>
+                <input type="submit" value="Change chatroom">
+            </form>
+        </form>
     </div>
 
   </body>
