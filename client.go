@@ -3,8 +3,18 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/gorilla/websocket"
+)
+
+// HeartBeat is implemented in client because it is a client side service
+var (
+	// The time we have to wait for the pong message before dropping the connection
+	pongWait = 10 & time.Second
+
+	// The frequency of pinging the client
+	pingInterval = (pongWait * 9) / 10
 )
 
 // A map that contains all the client connections
@@ -34,6 +44,13 @@ func (c *Client) readMessages() {
 		// clean up connection
 		c.manager.removeClient(c)
 	}()
+
+	if err := c.connection.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
+		log.Println(err)
+		return
+	}
+
+	c.connection.SetPongHandler(c.pongHandler)
 	for {
 		_, payload, err := c.connection.ReadMessage()
 		if err != nil {
@@ -62,6 +79,7 @@ func (c *Client) writeMessages() {
 		// cleanup go routine
 		c.manager.removeClient(c)
 	}()
+	ticker := time.NewTicker(pingInterval)
 	for {
 		select {
 		case message, ok := <-c.egress:
@@ -85,6 +103,20 @@ func (c *Client) writeMessages() {
 				log.Printf("failed to send message: %v", err)
 			}
 			log.Println("message sent")
+		case <-ticker.C:
+			log.Println("ping")
+			// Send a ping to the client
+			if err := c.connection.WriteMessage(websocket.PingMessage, []byte(``)); err != nil {
+				log.Println("writemsg err: ", err)
+				return
+			}
 		}
+
 	}
+}
+
+// the pongHandler function definition
+func (c *Client) pongHandler(pongMsg string) error {
+	log.Println("pong")
+	return c.connection.SetReadDeadline(time.Now().Add(pongWait))
 }
