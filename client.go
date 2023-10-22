@@ -11,7 +11,7 @@ import (
 // HeartBeat is implemented in client because it is a client side service
 var (
 	// The time we have to wait for the pong message before dropping the connection
-	pongWait = 10 & time.Second
+	pongWait = 10 * time.Second
 
 	// The frequency of pinging the client
 	pingInterval = (pongWait * 9) / 10
